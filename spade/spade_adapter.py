@@ -1,5 +1,4 @@
 import logging
-from typing import Tuple
 
 import cv2
 import torch
@@ -12,14 +11,12 @@ from spade.pix2pix_model import Pix2PixModel
 
 
 class SpadeAdapter:
-    def __init__(self, config: SpadeConfig, resolution: Tuple[int, int]):
+    def __init__(self, config: SpadeConfig):
         self.config = config
         self.logger = logging.getLogger()
 
         self.device = self._setup_device(config.device_type)
         self.logger.info(f"Spade using device: {self.device}")
-
-        self.resolution = resolution
 
         if not config.bypass_spade:
             self.model = Pix2PixModel(config, self.device)
@@ -71,5 +68,5 @@ class SpadeAdapter:
         return image
 
     def get_empty_frame(self):
-        width, height = self.resolution
+        width, height = self.config.resolution
         return np.zeros((height, width, 3), dtype=np.uint8)

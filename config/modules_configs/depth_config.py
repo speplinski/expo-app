@@ -15,11 +15,11 @@ class DepthGridSegmentsCount:
 @dataclass
 class DistanceThresholdInM:
     min: float = 0.4
-    max: float = 0.8
+    max: float = 1.8
 
 @dataclass
 class DepthConfig:
-    run_cameras_in_simulation_mode: bool = False
+    run_cameras_in_simulation_mode: bool = True
 
     depth_threshold: DepthThreshold = field(default_factory=DepthThreshold)
 

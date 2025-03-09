@@ -16,7 +16,7 @@ from ui.display.playback_statistics import PlaybackStatistics
 from ui.display.sdl_app import SDLApp
 
 class WindowDisplay:
-    def __init__(self, config: DisplayConfig, app: App):
+    def __init__(self, config: DisplayConfig, model_resolution: tuple[int, int], app: App):
         self.config = config
 
         self.logger = logging.getLogger()
@@ -27,11 +27,14 @@ class WindowDisplay:
 
         self.rendering_texture = None
 
+
+        vertical_resolution_offset = (config.resolution[1] - model_resolution[1]) >> 1
+
         self.main_rect = sdl2.SDL_Rect(
-            0, 
-            config.vertical_resolution_offset,
-            config.model_resolution[0],
-            config.model_resolution[1]
+            0,
+            vertical_resolution_offset,
+            model_resolution[0],
+            model_resolution[1]
         )
 
         self.stats = PlaybackStatistics()

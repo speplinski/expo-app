@@ -7,5 +7,4 @@ class RuntimeConfig:
     log_file = 'application.log'
     log_level = logging.DEBUG
 
-    debug_mode: bool = True
     test_animation_mode: bool = False

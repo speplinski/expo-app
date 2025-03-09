@@ -1,6 +1,5 @@
 import json
 import logging
-import random
 import threading
 from enum import Enum
 from multiprocessing import cpu_count
@@ -53,7 +52,7 @@ class SequencesManager:
                     'sequence': Sequence(
                         sequence_info['sequence_name'],
                         sequence_info['sequence_config'],
-                        self.config.display.model_resolution
+                        self.config.spade.resolution
                     )
                 }),
                 ops.do_action(lambda sequence_data: self._sequences.append(sequence_data['sequence'])),
