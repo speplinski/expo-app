@@ -5,10 +5,10 @@ from typing import Tuple
 @dataclass
 class DisplayConfig:
     monitor_index: int = 1
-    resolution: Tuple[int, int] = (960, 320)
-    model_resolution: Tuple[int, int] = (960, 320)
+    resolution: Tuple[int, int] = (1920, 1080)
+    model_resolution: Tuple[int, int] = (1920, 640)
 
-    full_screen_mode: bool = False
+    full_screen_mode: bool = True
 
     clear_frames_queue_when_overflow: bool = True
 

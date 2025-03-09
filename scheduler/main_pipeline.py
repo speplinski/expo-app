@@ -83,10 +83,11 @@ class MainPipeline:
                         lambda counters, counters_updates: np.minimum(counters + counters_updates, np.full(counters_count, max_counter_value)),
                         np.zeros(counters_count)
                     ),
+                    ops.map(self._recalculate_global),
                     ops.map(lambda counters: counters.astype(int)),
                     ops.distinct(lambda counters: tuple(counters)),
                     ops.do_action(app.update_counters),
-                    ops.take_while(lambda counters: np.any(counters < max_counter_value)),
+                    ops.take_while(lambda counters: max(counters) < max_counter_value),
                     ops.finally_action(lambda: self.sequence_switcher.on_next('next_sequence')),
                     ops.observe_on(self.image_generation_scheduler),
                     ops.map(self.sequences_manager.get_sequence_image),
@@ -103,6 +104,11 @@ class MainPipeline:
             on_completed=lambda: self.logger.info("Pipeline closed")
         )
 
+    def _recalculate_global(self, counters):
+        base_count = len(counters) - 4
+        counters[base_count] = max(counters[base_count+1], counters[base_count+2], counters[base_count+3])
+        return counters
+
     def _extend_counters_updates(self, counters_updates):
         assert len(counters_updates) % 3 == 0, "counters count has to be a multiple of 3"
 
@@ -113,11 +119,21 @@ class MainPipeline:
 
         result[:len(counters_updates)] = counters_updates
 
-        result[-4] = 1 if np.any(counters_updates[0:group_size]) else 0
-        result[-3] = 1 if np.any(counters_updates[group_size:group_size * 2]) else 0
-        result[-2] = 1 if np.any(counters_updates[group_size * 2:group_size * 3]) else 0
+        left_max = np.max(counters_updates[0:group_size])
+        center_max = np.max(counters_updates[group_size:group_size * 2])
+        right_max = np.max(counters_updates[group_size * 2:group_size * 3])
 
-        result[-1] = 1 if np.any(counters_updates) else 0
+        # @NOTE: Sprawdzić przypadek gdy DepthConfig.mirror_mode = False
+        # Pytanie: Jak wpłynie to na relację Left <> Right?
+        # Kontekst: 
+        #   - Gdy mirror_mode jest wyłączony, może wystąpić asymetria w mapowaniu
+        #   - Należy pamiętać o weryfikacji obu kierunków konwersji
+
+        start_idx = len(counters_updates)
+        result[start_idx] = max(left_max, center_max, right_max)  # Global
+        result[start_idx + 1] = left_max  # Left
+        result[start_idx + 2] = center_max  # Center
+        result[start_idx + 3] = right_max  # Right
 
         return result
 

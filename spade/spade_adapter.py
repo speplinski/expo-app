@@ -60,8 +60,7 @@ class SpadeAdapter:
 
         image = ((generated[0].cpu().numpy() * 0.5 + 0.5) * 255).clip(0, 255).astype(np.uint8)
         if image.shape[0] == 3:
-            image = image.transpose(1, 2, 0)
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            image = image[[2, 1, 0]].transpose(1, 2, 0)
 
         del generated, data
         if self.device.type == 'cuda':

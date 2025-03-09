@@ -158,9 +158,10 @@ class ExpoApp(App):
         self.call_from_thread(self._update_counters, values)
 
     def _update_counters(self, values):
-        self.base_counters_display.numbers = values[:-4].tolist()
-        self.aggregate_counters_display.numbers = values[-4:-1].tolist()
-        self.final_counter_display.numbers = [values[-1]]
+        base_values_count = len(values) - 4
+        self.base_counters_display.numbers = values[:base_values_count].tolist()
+        self.final_counter_display.numbers = [values[base_values_count]]  # Global
+        self.aggregate_counters_display.numbers = values[base_values_count+1:].tolist()  # Left, Center, Right
 
     def update_epoch(self, epoch):
         self.call_from_thread(self._update_epoch, epoch)
