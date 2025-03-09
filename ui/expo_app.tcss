@@ -1,0 +1,65 @@
+#detections_panel {
+    width: 1fr;
+
+    padding: 1;
+
+    .detections_data {
+        height: 1fr;
+        width: 100%;
+
+        align: center middle;
+
+        &.distances {
+            height: 2fr;
+        }
+
+        &.counters_list {
+            align: center middle;
+            padding: 0;
+            height: 2fr
+        }
+    }
+}
+
+
+#sequences_info {
+    width: 1fr;
+
+    padding: 2 4;
+
+    background: $surface;
+}
+
+#epoch {
+    width: 9;
+}
+
+#number-row {
+    height: 3;
+    align: center middle;
+}
+
+.number-cell {
+    width: 1fr;
+    height: 3;
+    content-align: center middle;
+    background: $primary-muted;
+}
+
+LogPanel {
+    align: center top;
+}
+
+.log_modal {
+    width: 80%;
+    height: 80%;
+}
+
+.statistics_container {
+    height: 3;
+    align: center middle;
+
+    #playback_statistics {
+        width: auto;
+    }
+}

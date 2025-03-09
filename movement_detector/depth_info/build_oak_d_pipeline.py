@@ -2,9 +2,9 @@ import depthai as dai
 
 # ToDo: check if still works after mixing nodes linking with other instructions instead of linking at the end
 def build_oak_d_pipeline(
-        horizontal_segments_count, vertical_segments_count,
-        lower_depth_threshold, upper_depth_threshold
-):
+        horizontal_segments_count: int, vertical_segments_count: int,
+        lower_depth_threshold: float, upper_depth_threshold: float
+) -> dai.Pipeline:
     pipeline = dai.Pipeline()
 
     stereo = _build_stereo(pipeline)
@@ -29,7 +29,7 @@ def build_oak_d_pipeline(
 
     return pipeline
 
-def _build_stereo(pipeline):
+def _build_stereo(pipeline: dai.Pipeline) -> dai.Node:
     mono_left = pipeline.create(dai.node.MonoCamera)
     mono_left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
     mono_left.setCamera('left')
@@ -48,7 +48,7 @@ def _build_stereo(pipeline):
 
     return stereo
 
-def _build_spatial_location_calculator(pipeline):
+def _build_spatial_location_calculator(pipeline: dai.Pipeline) -> dai.Node:
     spatial_location_calculator = pipeline.create(dai.node.SpatialLocationCalculator)
     spatial_location_calculator.inputConfig.setWaitForMessage(False)
 
