@@ -12,6 +12,7 @@ import reactivex.operators as ops
 
 from config.integrated_config import IntegratedConfig
 from sequences_manager.sequence import Sequence
+from sequences_manager.sequence_generator.static_paths_generator.static_paths_generator import StaticPathsNextSequenceGenerator
 
 
 class SequenceStatus(Enum):
@@ -24,6 +25,8 @@ class SequencesManager:
         self.logger = logging.getLogger()
 
         self.logger.info(f'Sequence manager initialized on thread {threading.current_thread().name}')
+
+        self._next_sequence_generator = StaticPathsNextSequenceGenerator()
 
         self._sequences: list[Sequence] = []
         self._current_sequence = None
@@ -83,17 +86,11 @@ class SequencesManager:
     def switch_sequence(self):
         assert len(self._sequences) > 0, 'no sequences available'
 
-        if self._current_sequence is None:
-            self._current_sequence = 0
-        else:
-            self._current_sequence = (self._current_sequence + 1) % len(self._sequences)
+        next_sequence_index = self._next_sequence_generator.next_sequence()
+        while next_sequence_index > len(self._sequences):
+            next_sequence_index = self._next_sequence_generator.next_sequence()
+
+        self._current_sequence = next_sequence_index
 
     def get_current_sequence_name(self):
         return self._sequences[self._current_sequence].name
-
-
-
-
-
-
-
