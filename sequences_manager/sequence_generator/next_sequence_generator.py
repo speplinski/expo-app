@@ -1,22 +1,27 @@
+import json
 from abc import abstractmethod, ABC
+
+from config.modules_configs.sequence_config import SequenceConfig
 
 
 class NextSequenceGenerator(ABC):
-    def __init__(self, subtract_one_from_result: bool) -> None:
+    def __init__(self, config: SequenceConfig) -> None:
         self._current_path_item = -1
         self._current_path = []
 
-        self._subtract_value = 1 if subtract_one_from_result else 0
+        with open(config.sequence_mapping_path, 'r') as file:
+            self._sequence_mapping = json.load(file)
 
-    def next_sequence(self) -> int:
+    def next_sequence(self) -> str:
         self._current_path_item += 1
 
         if self._current_path_item >= len(self._current_path):
             self._current_path_item = 0
             self._current_path = self._get_next_sequence_path()
 
-        return self._current_path[self._current_path_item] - self._subtract_value
+        current_item = self._current_path[self._current_path_item]
+        return self._sequence_mapping[current_item]
 
     @abstractmethod
-    def _get_next_sequence_path(self) -> list[int]:
+    def _get_next_sequence_path(self) -> list[str]:
         pass

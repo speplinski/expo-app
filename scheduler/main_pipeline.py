@@ -47,7 +47,7 @@ class MainPipeline:
             self.sequences_manager = SequencesManager(self.config)
             self.sequences_manager.load_masks_data().subscribe(
                 on_next=app.update_sequence_display,
-                on_error=lambda error: self.logger.error(error),
+                on_error=lambda error: self.logger.exception(error),
                 on_completed=lambda: self.sequence_switcher.on_next('start')
             )
 
