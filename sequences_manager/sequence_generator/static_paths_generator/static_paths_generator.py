@@ -12,5 +12,18 @@ class StaticPathsNextSequenceGenerator(NextSequenceGenerator):
         with open(config.static_paths_path, 'r') as file:
             self._allowed_sequences: list[list[str]] = json.load(file)
 
+        self._current_index = 0
+        self._shuffle_sequences()
+
+    def _shuffle_sequences(self):
+        random.shuffle(self._allowed_sequences)
+        self._current_index = 0
+
     def _get_next_sequence_path(self) -> list[str]:
-        return random.choice(self._allowed_sequences)
+        if self._current_index >= len(self._allowed_sequences):
+            self._shuffle_sequences()
+
+        sequence = self._allowed_sequences[self._current_index]
+        self._current_index += 1
+
+        return sequence
