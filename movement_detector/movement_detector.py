@@ -4,22 +4,19 @@ from reactivex import operators as ops
 
 from config.integrated_config import IntegratedConfig
 from movement_detector.depth_detections_observable import build_depth_detections_stream
+from movement_detector.get_distances_counters import get_distances_counters
+from movement_detector.reshape_and_scale_distances_for_display import reshape_and_scale_distances_for_display
 
 
 def build_detection_counters_stream(config: IntegratedConfig):
     return build_depth_detections_stream(config).pipe(
-        ops.map(lambda distances: np.array(distances).reshape(
-            config.depth.depth_grid_segments_count.vertical,
-            config.depth.depth_grid_segments_count.horizontal
-        )),
-        ops.map(lambda distances: np.fliplr(distances) if config.depth.mirror_mode else distances),
         ops.map(lambda distances: {
-            'distances': distances,
-            'columns': np.any(
-                (distances >= config.depth.distance_threshold_in_m.min) &
-                (distances <= config.depth.distance_threshold_in_m.max),
-                axis=0
-            ).astype(int)
+            'distances': reshape_and_scale_distances_for_display(distances, config.depth),
+            'columns': get_distances_counters(distances, config.depth)
+        }),
+        ops.map(lambda result: {
+            'distances': np.fliplr(result['distances']) if config.depth.mirror_mode else result['distances'],
+            'columns': np.flip(result['columns']) if config.depth.mirror_mode else result['columns']
         }),
         ops.publish()
     )
@@ -28,7 +25,7 @@ def build_detection_counters_updates_stream(detections_stream, config: Integrate
     sampling_interval = config.timing.counters_sampling_interval
     detection_threshold = config.timing.new_detection_epoch_threshold
     detection_threshold_diff = detection_threshold - config.timing.continued_detection_epoch_threshold
-    counters_count = config.depth.depth_grid_segments_count.horizontal
+    counters_count = config.depth.counters_count
 
     return detections_stream.pipe(
         ops.map(lambda detections: detections['columns']),

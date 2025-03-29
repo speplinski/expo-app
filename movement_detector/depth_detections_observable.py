@@ -18,7 +18,7 @@ def build_depth_detections_stream(config: IntegratedConfig):
             try:
                 depth_data_sensor = DepthDataSensor(config=config.depth)
             except RuntimeError as e:
-                logger.error("Cannot access the OAK-D camera!")
+                logger.error('Failed to initialize depth data sensor: {}'.format(e))
                 observer.on_error(e)
 
         def action(state):
