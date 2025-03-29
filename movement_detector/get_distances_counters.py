@@ -21,13 +21,13 @@ def get_distances_counters(
 
         within_threshold = (reshaped_distances >= min_threshold) & (reshaped_distances <= max_threshold)
 
-        segment_width = config.depth_grid_segments_count.horizontal // config.horizontal_segment_count_per_camera
+        segments = np.array_split(
+            np.arange(config.depth_grid_segments_count.horizontal),
+            config.horizontal_segment_count_per_camera
+        )
 
-        for j in range(config.horizontal_segment_count_per_camera):
-            start_col = j * segment_width
-            end_col = min((j + 1) * segment_width, config.depth_grid_segments_count.horizontal)
-
+        for j, segment_indices in enumerate(segments):
             result_idx = i * config.horizontal_segment_count_per_camera + j
-            result[result_idx] = int(np.any(within_threshold[:, start_col:end_col]))
+            result[result_idx] = int(np.any(within_threshold[:, segment_indices]))
 
     return result
