@@ -51,7 +51,7 @@ class ExpoApp(App):
         self.playback_statistics_static = None
 
         self._images_interpolator = ImagesInterpolator(config.timing.target_interpolation_frames)
-        self._window_display = WindowDisplay(config.display, config.spade.resolution, self)
+        self._window_display = WindowDisplay(config.display, config.spade.content_resolution, self)
         self._window_display_task = None
 
     def compose(self) -> ComposeResult:

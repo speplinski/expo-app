@@ -60,7 +60,7 @@ class SequencesManager:
                     'sequence': Sequence(
                         sequence_info['sequence_name'],
                         sequence_info['sequence_config'],
-                        self.config.spade.resolution
+                        self.config.spade.content_resolution
                     )
                 }),
                 ops.do_action(lambda sequence_data: self._sequences.update({sequence_data['sequence'].name: sequence_data['sequence']})),

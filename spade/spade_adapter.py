@@ -68,5 +68,5 @@ class SpadeAdapter:
         return image
 
     def get_empty_frame(self):
-        width, height = self.config.resolution
+        width, height = self.config.content_resolution
         return np.zeros((height, width, 3), dtype=np.uint8)

@@ -7,7 +7,7 @@ MODELS = {
     'debug_small': {
         'weights_path': './data/checkpoints/20_net_G.pth',
 
-        'resolution': (960, 320),
+        'content_resolution': (960, 320),
         'aspect_ratio': 3.0,
 
         'norm_G': 'spectralspadesyncbatch3x3',
@@ -20,7 +20,7 @@ MODELS = {
     'full': {
         'weights_path': './data/checkpoints/980_net_G.pth',
 
-        'resolution': (1920, 640),
+        'content_resolution': (1920, 640),
         'aspect_ratio': 3.0,
 
         'norm_G': 'spectralspadesyncbatch3x3',
@@ -44,7 +44,7 @@ class SpadeConfig:
 
     weights_path: str = ''
 
-    resolution: tuple[int, int] = (0, 0)
+    content_resolution: tuple[int, int] = (0, 0)
     crop_size: int = -1
     aspect_ratio: float = -1
 
@@ -62,4 +62,4 @@ class SpadeConfig:
                 if hasattr(self, key):
                     setattr(self, key, value)
 
-        self.crop_size = self.resolution[0]
+        self.crop_size = self.content_resolution[0]
