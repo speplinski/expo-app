@@ -14,10 +14,21 @@ def get_distances_counters(
         min_threshold = config.cameras[camera_key].threshold.min
         max_threshold = config.cameras[camera_key].threshold.max
 
-        reshaped_distances = cam_dist.reshape(
-            config.depth_grid_segments_count.vertical,
-            config.depth_grid_segments_count.horizontal
-        )
+        if isinstance(cam_dist, (int, float)):
+            cam_dist = np.full((config.depth_grid_segments_count.vertical * config.depth_grid_segments_count.horizontal), cam_dist)
+
+        if len(cam_dist) == 0:
+            cam_dist = np.zeros(config.depth_grid_segments_count.vertical * config.depth_grid_segments_count.horizontal)
+
+        try:
+            reshaped_distances = cam_dist.reshape(
+                config.depth_grid_segments_count.vertical,
+                config.depth_grid_segments_count.horizontal
+            )
+        except Exception as e:
+            logger.error(f"Failed to reshape distances for camera {i}: {e}")
+            logger.error(f"Shape: {cam_dist.shape}, Expected: ({config.depth_grid_segments_count.vertical}, {config.depth_grid_segments_count.horizontal})")
+            reshaped_distances = np.zeros((config.depth_grid_segments_count.vertical, config.depth_grid_segments_count.horizontal))
 
         within_threshold = (reshaped_distances >= min_threshold) & (reshaped_distances <= max_threshold)
 
