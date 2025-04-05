@@ -23,6 +23,8 @@ scipy = "*"
 reactivex = "*"
 rich = "*"
 textual-dev = "*"
+realesrgan = {git = "https://github.com/sberbank-ai/Real-ESRGAN.git"}
+huggingface-hub = "==0.10.0"
 
 [dev-packages]
 

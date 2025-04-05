@@ -1,6 +1,7 @@
 import torch
 
 from config.modules_configs.spade_config import SpadeConfig
+from image_upscaler.image_upscaler import ImageUpscaler
 from spade.networks.generator import SPADEGenerator
 
 
@@ -17,6 +18,8 @@ class Pix2PixModel(torch.nn.Module):
         weights = torch.load(config.weights_path, weights_only=True)
         self.netG.load_state_dict(weights)
 
+        self.upscaler = ImageUpscaler(weights_path=config.upscaler_model, scale=config.upscale_scale)
+
 
     def forward(self, data, mode):
         input_semantics, real_image = self.preprocess_input(data)
@@ -24,6 +27,9 @@ class Pix2PixModel(torch.nn.Module):
         if mode == 'inference':
             with torch.no_grad():
                 fake_image = self.netG(input_semantics, z=None)
+
+
+
             return fake_image
         else:
             raise ValueError("|mode| is invalid")

@@ -6,8 +6,6 @@ from typing import Tuple, List
 class DisplayConfig:
     monitor_index: int = 1
     
-    content_resolution: Tuple[int, int] = (960, 360)
-    
     full_screen_mode: bool = False
     
     clear_frames_queue_when_overflow: bool = True

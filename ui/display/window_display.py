@@ -18,8 +18,7 @@ class WindowDisplay:
         self.app = app
         
         self.model_resolution = model_resolution
-        self.content_resolution = config.content_resolution
-        
+
         self.cv_app = CVApp(config.monitor_index, config)
         
         monitor_index = min(config.monitor_index, len(config.available_monitors) - 1)
@@ -52,8 +51,8 @@ class WindowDisplay:
         if self.config.full_screen_mode:
             target_width, target_height = self.monitor_width, self.monitor_height
         else:
-            target_width, target_height = self.config.content_resolution
-        
+            target_width, target_height = self.model_resolution
+
         canvas = np.zeros((target_height, target_width, 3), dtype=np.uint8)
         if self.config.background_color != (0, 0, 0):
             canvas[:] = self.config.background_color
