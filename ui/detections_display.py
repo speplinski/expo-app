@@ -6,6 +6,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 
 from config.integrated_config import IntegratedConfig
+from config.modules_configs.depth_config import DistanceThresholdInM
 
 
 class DetectionsDisplay(Widget):
@@ -33,8 +34,9 @@ class DetectionsDisplay(Widget):
         if field == 0:
             return 'black'
 
-        min_height = self.config.depth.distance_threshold_in_m.min
-        max_height = self.config.depth.distance_threshold_in_m.max
+        default_distance_thresholds = DistanceThresholdInM()
+        min_height = default_distance_thresholds.min
+        max_height = default_distance_thresholds.max
 
         if field < min_height:
             return '#fff5eb'
