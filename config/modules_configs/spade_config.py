@@ -3,24 +3,63 @@ from dataclasses import dataclass, field
 import cv2
 
 
+MODELS = {
+    'debug_small': {
+        'weights_path': './data/checkpoints/20_net_G.pth',
+
+        'resolution': (960, 320),
+        'aspect_ratio': 3.0,
+
+        'norm_G': 'spectralspadesyncbatch3x3',
+        'num_upsampling_layers': 'normal',
+
+        'label_nc': 56,
+        'semantic_nc': 57,
+        'ngf': 64
+    },
+    'full': {
+        'weights_path': './data/checkpoints/980_net_G.pth',
+
+        'resolution': (1920, 640),
+        'aspect_ratio': 3.0,
+
+        'norm_G': 'spectralspadesyncbatch3x3',
+        'num_upsampling_layers': 'most',
+
+        'label_nc': 51, # v8
+        'semantic_nc': 52,
+        'ngf': 96
+    }
+}
+
 @dataclass
 class SpadeConfig:
     bypass_spade: bool = False
+    model_name: str = 'debug_small'
 
     colormap: str = cv2.COLORMAP_VIRIDIS
 
     device_type: str = 'auto'
-
-    weights_path: str = './data/checkpoints/980_net_G.pth'
-
     gpu_ids: list[int] = field(default_factory=lambda: [0])
 
-    crop_size: int = 1920
-    aspect_ratio: float = 3.0
+    weights_path: str = ''
 
-    norm_G: str = 'spectralspadesyncbatch3x3'
-    num_upsampling_layers: str = 'most'
+    resolution: tuple[int, int] = (0, 0)
+    crop_size: int = -1
+    aspect_ratio: float = -1
 
-    label_nc: int = 51 # v8
-    semantic_nc: int = 52
-    ngf: int = 96
+    norm_G: str = ''
+    num_upsampling_layers: str = ''
+
+    label_nc: int = -1
+    semantic_nc: int = -1
+    ngf: int = -1
+
+    def __post_init__(self):
+        if hasattr(self, 'model_name') and self.model_name in MODELS:
+            model_config = MODELS[self.model_name]
+            for key, value in model_config.items():
+                if hasattr(self, key):
+                    setattr(self, key, value)
+
+        self.crop_size = self.resolution[0]

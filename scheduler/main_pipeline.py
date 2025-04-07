@@ -42,12 +42,12 @@ class MainPipeline:
         test_animation_mode = self.config.runtime.test_animation_mode
 
         def build_image_generation_objects(_, __):
-            self.spade_adapter = SpadeAdapter(self.config.spade, self.config.display.model_resolution)
+            self.spade_adapter = SpadeAdapter(self.config.spade)
 
             self.sequences_manager = SequencesManager(self.config)
             self.sequences_manager.load_masks_data().subscribe(
                 on_next=app.update_sequence_display,
-                on_error=lambda error: self.logger.error(error),
+                on_error=lambda error: self.logger.exception(error),
                 on_completed=lambda: self.sequence_switcher.on_next('start')
             )
 
@@ -83,7 +83,7 @@ class MainPipeline:
                         lambda counters, counters_updates: np.minimum(counters + counters_updates, np.full(counters_count, max_counter_value)),
                         np.zeros(counters_count)
                     ),
-                    ops.map(self._recalculate_global),
+                    ops.map(lambda counters: np.concatenate([counters[:-4], [np.maximum.reduce(counters[-3:])], counters[-3:]])),
                     ops.map(lambda counters: counters.astype(int)),
                     ops.distinct(lambda counters: tuple(counters)),
                     ops.do_action(app.update_counters),
@@ -103,11 +103,6 @@ class MainPipeline:
             on_error=lambda err: self.logger.exception(err),
             on_completed=lambda: self.logger.info("Pipeline closed")
         )
-
-    def _recalculate_global(self, counters):
-        base_count = len(counters) - 4
-        counters[base_count] = max(counters[base_count+1], counters[base_count+2], counters[base_count+3])
-        return counters
 
     def _extend_counters_updates(self, counters_updates):
         assert len(counters_updates) % 3 == 0, "counters count has to be a multiple of 3"

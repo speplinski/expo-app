@@ -1,6 +1,5 @@
 import json
 import logging
-import random
 import threading
 from enum import Enum
 from multiprocessing import cpu_count
@@ -13,6 +12,9 @@ import reactivex.operators as ops
 
 from config.integrated_config import IntegratedConfig
 from sequences_manager.sequence import Sequence
+from sequences_manager.sequence_generator.random_paths_generator.random_sequence_generator import \
+    RandomSequenceGenerator
+from sequences_manager.sequence_generator.static_paths_generator.static_paths_generator import StaticPathsNextSequenceGenerator
 
 
 class SequenceStatus(Enum):
@@ -26,19 +28,24 @@ class SequencesManager:
 
         self.logger.info(f'Sequence manager initialized on thread {threading.current_thread().name}')
 
-        self._sequences: list[Sequence] = []
-        self._current_sequence = None
+        if config.sequence.use_static_paths:
+            self._next_sequence_generator = StaticPathsNextSequenceGenerator(config.sequence)
+        else:
+            self._next_sequence_generator = RandomSequenceGenerator(config.sequence)
+
+        self._sequences: dict[str, Sequence] = {}
+        self._current_sequence: str | None = None
 
     def load_masks_data(self) -> Observable:
         def sequence_loader_observable(observer, _):
             try:
-                with open(self.config.sequence.config_path) as f:
+                with open(self.config.sequence.mak_mapping_path) as f:
                     sequences_config = json.load(f)
             except FileNotFoundError as e:
                 observer.on_error(e)
                 return
 
-            self._sequences = []
+            self._sequences = {}
 
             loading_scheduler = ThreadPoolScheduler(cpu_count())
 
@@ -53,10 +60,10 @@ class SequencesManager:
                     'sequence': Sequence(
                         sequence_info['sequence_name'],
                         sequence_info['sequence_config'],
-                        self.config.display.model_resolution
+                        self.config.spade.resolution
                     )
                 }),
-                ops.do_action(lambda sequence_data: self._sequences.append(sequence_data['sequence'])),
+                ops.do_action(lambda sequence_data: self._sequences.update({sequence_data['sequence'].name: sequence_data['sequence']})),
                 ops.flat_map( # ensures concurrency
                     lambda sequence_data: of(sequence_data).pipe(
                         ops.observe_on(loading_scheduler),
@@ -83,18 +90,7 @@ class SequencesManager:
 
     def switch_sequence(self):
         assert len(self._sequences) > 0, 'no sequences available'
-
-        if self._current_sequence is None:
-            self._current_sequence = 0
-        else:
-            self._current_sequence = (self._current_sequence + 1) % len(self._sequences)
+        self._current_sequence = self._next_sequence_generator.next_sequence()
 
     def get_current_sequence_name(self):
-        return self._sequences[self._current_sequence].name
-
-
-
-
-
-
-
+        return self._current_sequence
