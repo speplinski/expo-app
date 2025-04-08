@@ -91,6 +91,9 @@ class MainPipeline:
                     ops.finally_action(lambda: self.sequence_switcher.on_next('next_sequence')),
                     ops.observe_on(self.image_generation_scheduler),
                     ops.map(self.sequences_manager.get_sequence_image),
+                    ops.map_indexed(lambda image, index: (image, index)),
+                    ops.filter(lambda indexed_image: indexed_image[1] % 2 == 0),
+                    ops.map(lambda indexed_image: indexed_image[0]),
                     ops.map(self.spade_adapter.process_mask),
                     ops.do_action(self.current_frame_subject.on_next)
                 )
