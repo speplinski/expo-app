@@ -7,6 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 from config.modules_configs.spade_config import SpadeConfig
+from image_upscaler.image_upscaler import ImageUpscaler
 from spade.pix2pix_model import Pix2PixModel
 
 
@@ -17,6 +18,8 @@ class SpadeAdapter:
 
         self.device = self._setup_device(config.device_type)
         self.logger.info(f"Spade using device: {self.device}")
+
+        self.upscaler = ImageUpscaler(weights_path=config.upscaler_model, scale=config.upscale_scale)
 
         if not config.bypass_spade:
             self.model = Pix2PixModel(config, self.device)
@@ -65,8 +68,10 @@ class SpadeAdapter:
         elif self.device.type == 'mps':
             torch.mps.empty_cache()
 
+        image = self.upscaler.upscale(image)
+
         return image
 
     def get_empty_frame(self):
-        width, height = self.config.content_resolution
+        width, height = self.config.output_resolution
         return np.zeros((height, width, 3), dtype=np.uint8)
