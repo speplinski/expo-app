@@ -28,9 +28,9 @@ class OakCameraConfig:
 
 @dataclass
 class DepthConfig:
-    run_cameras_in_simulation_mode: bool = True
+    run_cameras_in_simulation_mode: bool = False
 
-    mirror_mode: bool = True
+    mirror_mode: bool = False
 
     header_length: int = 32
     cameras: Dict[str, OakCameraConfig] = None
@@ -44,7 +44,7 @@ class DepthConfig:
         if self.cameras is None:
             self.cameras = {
                 "camera1": OakCameraConfig(
-                    ip_address="192.168.70.64",
+                    ip_address="192.168.70.65",
                     threshold=DistanceThresholdInM()
                 ),
                 "camera2": OakCameraConfig(
@@ -52,9 +52,10 @@ class DepthConfig:
                     threshold=DistanceThresholdInM()
                 ),
                 "camera3": OakCameraConfig(
-                    ip_address="192.168.70.65",
+                    ip_address="192.168.70.64",
                     threshold=DistanceThresholdInM()
                 )
             }
 
+        # 64: left, 62: center, 65: right
         self.counters_count = self.horizontal_segment_count_per_camera * len(self.cameras)

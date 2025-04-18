@@ -1,4 +1,5 @@
 /data/
+/weights/
 /.idea/
 /expo.iml
 /checkpoints/

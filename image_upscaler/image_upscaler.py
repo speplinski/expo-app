@@ -30,7 +30,7 @@ class ImageUpscaler:
 
         if self.precision == "fp16":
             with torch.no_grad():
-                with autocast():
+                with autocast('cuda'):
                     sr_pil_image = self.model.predict(pil_image)
         else:
             with torch.no_grad():

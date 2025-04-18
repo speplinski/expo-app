@@ -2,6 +2,7 @@ import logging
 
 import cv2
 import torch
+import time
 
 import numpy as np
 import numpy.typing as npt
@@ -41,10 +42,14 @@ class SpadeAdapter:
         return torch.device(device_type)
 
     def process_mask(self, mask: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+
+        start_time = time.time()
+
         if self.config.bypass_spade:
             normalized_mask = cv2.normalize(mask, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
             return cv2.applyColorMap(normalized_mask, self.config.colormap)
 
+        inf_start = time.time()
         data = {
             'label': torch.from_numpy(np.stack([mask])).unsqueeze(1).float(),
             'instance': torch.zeros(1).to(self.device),
@@ -58,6 +63,9 @@ class SpadeAdapter:
             else:
                 generated = self.model(data, mode='inference')
 
+        inf_end = time.time()
+        logging.info(f"inference took {inf_end - inf_start:.4f} seconds.")
+        
         image = ((generated[0].cpu().numpy() * 0.5 + 0.5) * 255).clip(0, 255).astype(np.uint8)
         if image.shape[0] == 3:
             image = image[[2, 1, 0]].transpose(1, 2, 0)
@@ -68,8 +76,12 @@ class SpadeAdapter:
         elif self.device.type == 'mps':
             torch.mps.empty_cache()
 
+        up_start = time.time()
         image = self.upscaler.upscale(image)
-
+        up_end = time.time()
+        logging.info(f"upscale took {up_end - up_start:.4f} seconds.")
+        
+        logging.info(f"Total took {time.time() - start_time:.4f} seconds.")
         return image
 
     def get_empty_frame(self):

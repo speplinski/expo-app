@@ -34,7 +34,7 @@ class SequenceLayer:
                     if file_path.is_file() and not file_path.name.startswith('.')
                 ])
 
-                assert len(frames_files) == 61, f'wrong frames files count in {column_directory}'
+                assert len(frames_files) == 31, f'wrong frames files count in {column_directory}'
 
                 for frame_file in frames_files:
                     frame_mask = self._load_image(frame_file, gray_shade, target_size)

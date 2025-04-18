@@ -1,4 +1,6 @@
 import cv2
+import ctypes
+import platform
 
 from config.modules_configs.display_config import DisplayConfig
 
@@ -14,6 +16,8 @@ class CVApp:
 
         if self.config.full_screen_mode:
             cv2.setWindowProperty(self.window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+            if platform.system() == "Windows":
+                ctypes.windll.user32.ShowCursor(False)
         else:
             if monitor_index >= len(config.available_monitors):
                 print(f"Warning: Monitor {monitor_index} not found. Using monitor 0.")
@@ -28,4 +32,6 @@ class CVApp:
         cv2.waitKey(1)
         
     def close(self):
+        if platform.system() == "Windows":
+            ctypes.windll.user32.ShowCursor(True)
         cv2.destroyWindow(self.window_name)
