@@ -37,7 +37,7 @@ class MainPipeline:
 
     def run_pipeline(self, app: ExpoApp):
         sequence_switch_epoch = self.config.timing.sequence_switch_epoch
-        counters_count = self.config.depth.depth_grid_segments_count.horizontal + 4 # 3 additional sides counters and 1 global
+        counters_count = self.config.depth.counters_count + 4 # 3 additional sides counters and 1 global
         max_counter_value = self.config.timing.max_counter_value
         test_animation_mode = self.config.runtime.test_animation_mode
 
@@ -139,6 +139,7 @@ class MainPipeline:
         self._continuous_stream_connection.dispose()
         self._subscription.dispose()
 
-        self.spade_adapter.model = None
+        if self.spade_adapter is not None:
+            self.spade_adapter.model = None
 
         self.logger.info('DONE')

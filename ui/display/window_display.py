@@ -1,122 +1,105 @@
 import logging
-import sys
 import time
 
 import cv2
-import sdl2
-import ctypes
-
 import numpy as np
 import numpy.typing as npt
-from sdl2.ext import Texture
 from textual.app import App
 
 from config.modules_configs.display_config import DisplayConfig
 from ui.display.playback_statistics import PlaybackStatistics
-from ui.display.sdl_app import SDLApp
+from ui.display.cv_app import CVApp
+
 
 class WindowDisplay:
     def __init__(self, config: DisplayConfig, model_resolution: tuple[int, int], app: App):
         self.config = config
-
         self.logger = logging.getLogger()
-
         self.app = app
+        
+        self.model_resolution = model_resolution
 
-        self.sdl_app = SDLApp(config.monitor_index, config)
-
-        self.rendering_texture = None
-
-
-        vertical_resolution_offset = (config.resolution[1] - model_resolution[1]) >> 1
-
-        self.main_rect = sdl2.SDL_Rect(
-            0,
-            vertical_resolution_offset,
-            model_resolution[0],
-            model_resolution[1]
-        )
-
+        self.cv_app = CVApp(config.monitor_index, config)
+        
+        monitor_index = min(config.monitor_index, len(config.available_monitors) - 1)
+        _, _, self.monitor_width, self.monitor_height = config.available_monitors[monitor_index]
+        
         self.stats = PlaybackStatistics()
 
     def process_frame(self, image: npt.NDArray[np.uint8]):
         try:
             self._handle_events()
-
             self._render(image)
         except Exception as e:
             self.logger.error(f"Error in render loop: {e}")
 
     def _handle_events(self):
-        event = sdl2.SDL_Event()
-        while sdl2.SDL_PollEvent(ctypes.byref(event)):
-            if event.type == sdl2.SDL_QUIT:
-                self.app.action_quit()
-            elif event.type == sdl2.SDL_KEYDOWN:
-                if event.key.keysym.sym in (sdl2.SDLK_ESCAPE, sdl2.SDLK_q):
-                    self.app.action_quit()
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27 or key == ord('q'):
+            self.app.action_quit()
 
     def _render(self, image: npt.NDArray[np.uint8]):
-        image_texture = self._get_image_texture(image)
-
-        if self.rendering_texture:
-            sdl2.SDL_DestroyTexture(self.rendering_texture)
-        self.rendering_texture = image_texture
-
+        display_image = self._prepare_image(image)
+        
         self.stats.update_display_frame()
         if not self.stats.start_time:
             self.stats.start_playback(time.time())
+        
+        self.cv_app.show_image(display_image)
 
-        sdl2.SDL_SetRenderDrawColor(self.sdl_app.renderer, 0, 0, 0, 255)
-        sdl2.SDL_RenderClear(self.sdl_app.renderer)
-
-        if self.rendering_texture:
-            sdl2.SDL_RenderCopy(
-                self.sdl_app.renderer,
-                self.rendering_texture,
-                None,
-                self.main_rect
-            )
-
-        sdl2.SDL_RenderPresent(self.sdl_app.renderer)
-
-    def _get_image_texture(self, opencv_image: npt.NDArray[np.uint8]) -> Texture:
-        rgb_image = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2RGB)
-
-        height, width = rgb_image.shape[:2]
-        depth = 24  # RGB - 8 bits per channel
-        if sys.byteorder == 'little':
-            rmask, gmask, bmask = 0x000000FF, 0x0000FF00, 0x00FF0000
+    def _prepare_image(self, input_image: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+        if self.config.full_screen_mode:
+            target_width, target_height = self.monitor_width, self.monitor_height
         else:
-            rmask, gmask, bmask = 0xFF000000, 0x00FF0000, 0x0000FF00
-        amask = 0
+            target_width, target_height = self.model_resolution
 
-        surface = sdl2.SDL_CreateRGBSurface(
-            0, width, height, depth,
-            rmask, gmask, bmask, amask
-        )
+        canvas = np.zeros((target_height, target_width, 3), dtype=np.uint8)
+        if self.config.background_color != (0, 0, 0):
+            canvas[:] = self.config.background_color
+        
+        input_height, input_width = input_image.shape[:2]
+        
+        if self.config.scaling_mode == "none":
+            x_offset = (target_width - input_width) // 2
+            y_offset = (target_height - input_height) // 2
+            
+            if x_offset >= 0 and y_offset >= 0:
+                canvas[y_offset:y_offset+input_height, x_offset:x_offset+input_width] = input_image
+            else:
+                src_x = max(0, -x_offset)
+                src_y = max(0, -y_offset)
+                dst_x = max(0, x_offset)
+                dst_y = max(0, y_offset)
+                
+                copy_width = min(input_width - src_x, target_width - dst_x)
+                copy_height = min(input_height - src_y, target_height - dst_y)
+                
+                if copy_width > 0 and copy_height > 0:
+                    canvas[dst_y:dst_y+copy_height, dst_x:dst_x+copy_width] = input_image[src_y:src_y+copy_height, src_x:src_x+copy_width]
+                
+        elif self.config.scaling_mode == "stretch":
+            return cv2.resize(input_image, (target_width, target_height))
+            
+        elif self.config.scaling_mode == "fit" or self.config.scaling_mode == "fill":
+            scale_width = target_width / input_width
+            scale_height = target_height / input_height
+            
+            if self.config.scaling_mode == "fit":
+                scale = min(scale_width, scale_height)
+            else:
+                scale = max(scale_width, scale_height)
+            
+            new_width = int(input_width * scale)
+            new_height = int(input_height * scale)
+            
+            resized_image = cv2.resize(input_image, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+            
+            x_offset = (target_width - new_width) // 2
+            y_offset = (target_height - new_height) // 2
 
-        if not surface:
-            raise Exception("Could not create SDL surface: " + sdl2.SDL_GetError().decode())
-
-        sdl2.SDL_LockSurface(surface)
-
-        image_pixels = rgb_image.tobytes()
-        ctypes.memmove(surface.contents.pixels, image_pixels, len(image_pixels))
-        sdl2.SDL_UnlockSurface(surface)
-
-        texture = sdl2.SDL_CreateTextureFromSurface(self.sdl_app.renderer, surface)
-
-        sdl2.SDL_FreeSurface(surface)
-
-        if not texture:
-            raise Exception("Failed to create texture: " + sdl2.SDL_GetError().decode())
-
-        return texture
+            canvas[y_offset:y_offset+new_height, x_offset:x_offset+new_width] = resized_image
+        
+        return canvas
 
     def cleanup(self):
-        self.sdl_app.close()
-
-        if self.rendering_texture:
-            sdl2.SDL_DestroyTexture(self.rendering_texture)
-            self.rendering_texture = None
+        self.cv_app.close()

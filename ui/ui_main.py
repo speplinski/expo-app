@@ -51,7 +51,7 @@ class ExpoApp(App):
         self.playback_statistics_static = None
 
         self._images_interpolator = ImagesInterpolator(config.timing.target_interpolation_frames)
-        self._window_display = WindowDisplay(config.display, config.spade.resolution, self)
+        self._window_display = WindowDisplay(config.display, config.spade.output_resolution, self)
         self._window_display_task = None
 
     def compose(self) -> ComposeResult:
@@ -82,18 +82,20 @@ class ExpoApp(App):
         self.theme = "monokai"
 
         self.detections: DetectionsDisplay = cast(DetectionsDisplay, self.query_one("#distances"))
-        self.detections.styles.width = self.config.depth.depth_grid_segments_count.horizontal * FIELD_SIZE * 2
-        self.detections.styles.height = self.config.depth.depth_grid_segments_count.vertical * FIELD_SIZE * 2
+        self.detections.styles.width = self.config.depth.depth_grid_display_segments_count.horizontal * FIELD_SIZE * 2
+        self.detections.styles.height = self.config.depth.depth_grid_display_segments_count.vertical * FIELD_SIZE * 2
+
+        counters_width = self.config.depth.counters_count * FIELD_SIZE * 2
 
         self.columns_display: Sparkline = cast(Sparkline, self.query_one("#columns_counters"))
-        self.columns_display.styles.width = self.config.depth.depth_grid_segments_count.horizontal * FIELD_SIZE * 2
+        self.columns_display.styles.width = counters_width
 
         self.base_counters_display: NumbersRow = cast(NumbersRow, self.query_one("#base_counters"))
-        self.base_counters_display.styles.width = self.config.depth.depth_grid_segments_count.horizontal * FIELD_SIZE * 2
+        self.base_counters_display.styles.width = counters_width
         self.aggregate_counters_display: NumbersRow = cast(NumbersRow, self.query_one("#aggregate_counters"))
-        self.aggregate_counters_display.styles.width = self.config.depth.depth_grid_segments_count.horizontal * FIELD_SIZE * 2
+        self.aggregate_counters_display.styles.width = counters_width
         self.final_counter_display: NumbersRow = cast(NumbersRow, self.query_one("#final_counter"))
-        self.final_counter_display.styles.width = self.config.depth.depth_grid_segments_count.horizontal * FIELD_SIZE * 2
+        self.final_counter_display.styles.width = counters_width
 
         self.epoch_display = self.query_one("#epoch")
 

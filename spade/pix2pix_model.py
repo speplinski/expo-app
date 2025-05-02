@@ -24,6 +24,7 @@ class Pix2PixModel(torch.nn.Module):
         if mode == 'inference':
             with torch.no_grad():
                 fake_image = self.netG(input_semantics, z=None)
+
             return fake_image
         else:
             raise ValueError("|mode| is invalid")
