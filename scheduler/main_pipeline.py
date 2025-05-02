@@ -139,6 +139,7 @@ class MainPipeline:
         self._continuous_stream_connection.dispose()
         self._subscription.dispose()
 
-        self.spade_adapter.model = None
+        if self.spade_adapter is not None:
+            self.spade_adapter.model = None
 
         self.logger.info('DONE')

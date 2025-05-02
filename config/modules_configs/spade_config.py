@@ -44,7 +44,11 @@ class SpadeConfig:
 
     weights_path: str = ''
 
+    upscaler_model: str = 'weights/RealESRGAN_x2plus.pth'
+    upscale_scale: int = 2
+
     content_resolution: tuple[int, int] = (0, 0)
+    output_resolution: tuple[int, int] = (0, 0)
     crop_size: int = -1
     aspect_ratio: float = -1
 
@@ -61,5 +65,7 @@ class SpadeConfig:
             for key, value in model_config.items():
                 if hasattr(self, key):
                     setattr(self, key, value)
+            output_scale = 1 if self.bypass_spade else self.upscale_scale
+            self.output_resolution = tuple(dimension * output_scale for dimension in self.content_resolution)
 
         self.crop_size = self.content_resolution[0]
