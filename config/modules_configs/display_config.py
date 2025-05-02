@@ -6,7 +6,7 @@ from typing import Tuple, List
 class DisplayConfig:
     monitor_index: int = 1
     
-    full_screen_mode: bool = False
+    full_screen_mode: bool = True
     
     clear_frames_queue_when_overflow: bool = True
     
@@ -15,7 +15,7 @@ class DisplayConfig:
     # "fill" - Maintain aspect ratio and fill screen (may crop image)
     # "stretch" - Stretch image to fill screen (may distort)
     # "none" - No scaling, center image
-    scaling_mode: str = "fit"
+    scaling_mode: str = "none"
     
     background_color: Tuple[int, int, int] = (0, 0, 0)
     

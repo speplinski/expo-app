@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class SequenceConfig:
-    use_static_paths = False
+    use_static_paths = True
 
     images_path: str = "data/landscapes"
 

@@ -79,7 +79,7 @@ class OakSocketAdapter:
 
         for camera_key, camera_config in self.config.cameras.items():
             try:
-                self.logger.debug(f"Reading from camera {camera_key} at {camera_config.ip_address}")
+                #self.logger.debug(f"Reading from camera {camera_key} at {camera_config.ip_address}")
                 distances = self.read_frame_from_camera(camera_config)
                 camera_distances.append(distances)
             except Exception as e:

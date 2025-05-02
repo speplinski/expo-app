@@ -18,7 +18,7 @@ MODELS = {
         'ngf': 64
     },
     'full': {
-        'weights_path': './data/checkpoints/980_net_G.pth',
+        'weights_path': './data/checkpoints/1160_net_G.pth',
 
         'content_resolution': (1920, 640),
         'aspect_ratio': 3.0,
@@ -26,8 +26,8 @@ MODELS = {
         'norm_G': 'spectralspadesyncbatch3x3',
         'num_upsampling_layers': 'most',
 
-        'label_nc': 51, # v8
-        'semantic_nc': 52,
+        'label_nc': 56, # v10
+        'semantic_nc': 57,
         'ngf': 96
     }
 }
@@ -35,7 +35,7 @@ MODELS = {
 @dataclass
 class SpadeConfig:
     bypass_spade: bool = False
-    model_name: str = 'debug_small'
+    model_name: str = 'full'
 
     colormap: str = cv2.COLORMAP_VIRIDIS
 

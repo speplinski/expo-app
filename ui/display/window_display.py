@@ -62,6 +62,7 @@ class WindowDisplay:
         if self.config.scaling_mode == "none":
             x_offset = (target_width - input_width) // 2
             y_offset = (target_height - input_height) // 2
+            y_offset = y_offset + 40
             
             if x_offset >= 0 and y_offset >= 0:
                 canvas[y_offset:y_offset+input_height, x_offset:x_offset+input_width] = input_image
