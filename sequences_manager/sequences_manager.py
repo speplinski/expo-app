@@ -39,7 +39,7 @@ class SequencesManager:
     def load_masks_data(self) -> Observable:
         def sequence_loader_observable(observer, _):
             try:
-                with open(self.config.sequence.mak_mapping_path) as f:
+                with open(self.config.sequence.mask_mapping_path) as f:
                     sequences_config = json.load(f)
             except FileNotFoundError as e:
                 observer.on_error(e)
@@ -60,14 +60,19 @@ class SequencesManager:
                     'sequence': Sequence(
                         sequence_info['sequence_name'],
                         sequence_info['sequence_config'],
-                        self.config.spade.content_resolution
+                        self.config.spade.content_resolution,
+                        self.config.spade.output_resolution,
+                        self.config.timing.max_counter_value
                     )
                 }),
                 ops.do_action(lambda sequence_data: self._sequences.update({sequence_data['sequence'].name: sequence_data['sequence']})),
                 ops.flat_map( # ensures concurrency
                     lambda sequence_data: of(sequence_data).pipe(
                         ops.observe_on(loading_scheduler),
-                        ops.do_action(lambda sequence_data: sequence_data['sequence'].load_data(self.config.sequence.images_path)),
+                        ops.do_action(lambda sequence_data: sequence_data['sequence'].load_data(
+                            self.config.sequence.images_path,
+                            self.config.sequence.overlays_images_path
+                        )),
                         ops.do_action(lambda sequence_data: observer.on_next({
                             **sequence_data['sequence_info'],
                             'status': SequenceStatus.READY
@@ -87,9 +92,15 @@ class SequencesManager:
 
         return self._sequences[self._current_sequence].build_image(counters)
 
+    def update_sequence_overlay(self, counters: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+        return self._sequences[self._current_sequence].update_overlay(counters)
 
     def switch_sequence(self):
         assert len(self._sequences) > 0, 'no sequences available'
+
+        if self._current_sequence is not None:
+            self._sequences[self._current_sequence].reset_overlay()
+
         self._current_sequence = self._next_sequence_generator.next_sequence()
 
     def get_current_sequence_name(self):

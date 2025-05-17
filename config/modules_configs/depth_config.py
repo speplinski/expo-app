@@ -28,7 +28,7 @@ class OakCameraConfig:
 
 @dataclass
 class DepthConfig:
-    run_cameras_in_simulation_mode: bool = False
+    run_cameras_in_simulation_mode: bool = True
 
     mirror_mode: bool = False
 
