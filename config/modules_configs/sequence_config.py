@@ -6,9 +6,10 @@ class SequenceConfig:
     use_static_paths = True
 
     images_path: str = "data/landscapes"
+    overlays_images_path: str = "data/overlays"
 
     sequence_mapping_path: str = "data/sequence_config/sequence_mapping.json"
-    mak_mapping_path: str = "data/sequence_config/mask_mapping.json"
+    mask_mapping_path: str = "data/sequence_config/mask_mapping.json"
 
     static_paths_path: str = "data/sequence_config/static_paths.json"
 
