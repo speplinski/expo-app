@@ -98,16 +98,15 @@ class MainPipeline:
                             ops.observe_on(self.spade_processing_scheduler),
                             ops.map(self.sequences_manager.get_sequence_image),
                             ops.map(self.spade_adapter.process_mask),
-                            ops.do_action(lambda _: logging.info('SPADE generated')),
                             ops.start_with(None)
                         ),
                         shared_counters.pipe(
                             ops.observe_on(self.overlay_processing_scheduler),
                             ops.map(self.sequences_manager.update_sequence_overlay),
-                            ops.do_action(lambda _: logging.info('OVERLAY generated')),
                             ops.start_with(None)
                         )
                     )),
+                    ops.sample(self.config.timing.counters_sampling_interval * 0.9),
                     ops.filter(lambda results: all(result is not None for result in results)),
                     ops.map(lambda results: overlay_images(results[0], results[1])),
                     ops.do_action(self.current_frame_subject.on_next)
