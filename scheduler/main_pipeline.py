@@ -106,7 +106,7 @@ class MainPipeline:
                             ops.start_with(None)
                         )
                     )),
-                    ops.sample(self.config.timing.counters_sampling_interval * 0.9),
+                    ops.sample(max(1.0, self.config.timing.counters_sampling_interval * 0.9)),
                     ops.filter(lambda results: all(result is not None for result in results)),
                     ops.map(lambda results: overlay_images(results[0], results[1])),
                     ops.do_action(self.current_frame_subject.on_next)
