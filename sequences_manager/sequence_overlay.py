@@ -59,6 +59,8 @@ class SequenceOverlay:
         self._overlay_image[:, :, 3] = 0
 
     def update_overlay_image(self, counters: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+        counters = counters[:9]
+
         if self._previous_counters is None:
             self._previous_counters = np.zeros_like(counters)
         
