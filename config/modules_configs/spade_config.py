@@ -35,7 +35,7 @@ MODELS = {
 @dataclass
 class SpadeConfig:
     bypass_spade: bool = False
-    model_name: str = 'full'
+    model_name: str = 'debug_small'
 
     colormap: str = cv2.COLORMAP_VIRIDIS
 

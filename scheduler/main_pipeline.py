@@ -3,13 +3,14 @@ import threading
 
 import numpy as np
 
-from reactivex import Subject
+from reactivex import Subject, combine_latest
 from reactivex.scheduler import NewThreadScheduler, EventLoopScheduler
 
 from reactivex import operators as ops
 
 from config.integrated_config import IntegratedConfig
 from movement_detector.movement_detector import build_detection_counters_stream, build_detection_counters_updates_stream
+from scheduler.utils import overlay_images
 from sequences_manager.sequences_manager import SequencesManager
 from spade.spade_adapter import SpadeAdapter
 from ui.ui_main import ExpoApp
@@ -25,6 +26,8 @@ class MainPipeline:
         self.current_frame_subject: Subject = Subject()
 
         self.image_generation_scheduler = EventLoopScheduler()
+        self.spade_processing_scheduler = NewThreadScheduler()
+        self.overlay_processing_scheduler = NewThreadScheduler()
         self.detections_scheduler = NewThreadScheduler()
         self.counters_processing_scheduler = EventLoopScheduler()
         self.transition_scheduler = EventLoopScheduler()
@@ -90,8 +93,22 @@ class MainPipeline:
                     ops.take_while(lambda counters: max(counters) < max_counter_value),
                     ops.finally_action(lambda: self.sequence_switcher.on_next('next_sequence')),
                     ops.observe_on(self.image_generation_scheduler),
-                    ops.map(self.sequences_manager.get_sequence_image),
-                    ops.map(self.spade_adapter.process_mask),
+                    ops.publish(lambda shared_counters: combine_latest(
+                        shared_counters.pipe(
+                            ops.observe_on(self.spade_processing_scheduler),
+                            ops.map(self.sequences_manager.get_sequence_image),
+                            ops.map(self.spade_adapter.process_mask),
+                            ops.start_with(None)
+                        ),
+                        shared_counters.pipe(
+                            ops.observe_on(self.overlay_processing_scheduler),
+                            ops.map(self.sequences_manager.update_sequence_overlay),
+                            ops.start_with(None)
+                        )
+                    )),
+                    ops.sample(max(1.0, self.config.timing.counters_sampling_interval * 0.9)),
+                    ops.filter(lambda results: all(result is not None for result in results)),
+                    ops.map(lambda results: overlay_images(results[0], results[1])),
                     ops.do_action(self.current_frame_subject.on_next)
                 )
             )
