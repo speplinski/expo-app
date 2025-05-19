@@ -1,0 +1,42 @@
+{
+  "cameras": [
+    {
+      "name": "left",
+      "ip_address": "192.168.70.64",
+      "grid_size": [22, 14],
+      "margins": [0.2, 0.05, 0.3, 0.1],
+      "port": 65432,
+      "retry_delay": 10,
+      "script_config": {
+        "debug_mode": false,
+        "custom_imports": "import random",
+        "custom_distance_processing": "# Left camera custom processing\ndistance = max(0.5, min(distance, 5.0))  # Limit range",
+        "custom_data_preparation": "# Custom preparation for left camera\n# distances.sort()"
+      }
+    },
+    {
+      "name": "center",
+      "ip_address": "192.168.70.62",
+      "grid_size": [22, 14],
+      "margins": [0.2, 0.1, 0.25, 0.25],
+      "port": 65432,
+      "retry_delay": 10,
+      "script_config": {
+        "debug_mode": false,
+        "custom_distance_processing": "# Center camera custom processing\ndistance = max(0.5, min(distance, 5.0))  # Limit range"
+      }
+    },
+    {
+      "name": "right",
+      "ip_address": "192.168.70.65",
+      "grid_size": [22, 14],
+      "margins": [0.2, 0.1, 0.1, 0.3],
+      "port": 65432,
+      "retry_delay": 10,
+      "script_config": {
+        "debug_mode": false,
+        "custom_distance_processing": "# Right camera custom processing\ndistance = max(0.5, min(distance, 5.0))  # Limit range"
+      }
+    }
+  ]
+}
