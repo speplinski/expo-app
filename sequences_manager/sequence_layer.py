@@ -5,7 +5,10 @@ import numpy as np
 import numpy.typing as npt
 
 class SequenceLayer:
-    def __init__(self, gray_shade: int, target_size: (int, int), dynamic_files_path: str = None, static_file_path: str = None):
+    def __init__(self, gray_shade: int, target_size: (int, int),
+                 dynamic_files_path: str = None, static_file_path: str = None,
+                 max_counter_value: int = None
+                ):
         assert dynamic_files_path is not None or static_file_path is not None, 'either files_path or static_file_path should be defined'
 
         self._static_mask_image = None
@@ -34,7 +37,7 @@ class SequenceLayer:
                     if file_path.is_file() and not file_path.name.startswith('.')
                 ])
 
-                assert len(frames_files) == 31, f'wrong frames files count in {column_directory}'
+                assert len(frames_files) == max_counter_value + 1, f'wrong frames files count in {column_directory}'
 
                 for frame_file in frames_files:
                     frame_mask = self._load_image(frame_file, gray_shade, target_size)

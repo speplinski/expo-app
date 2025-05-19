@@ -8,5 +8,5 @@ class TimingConfig:
     sequence_switch_epoch: float = 90
     new_detection_epoch_threshold = 0
     continued_detection_epoch_threshold = 1
-    max_counter_value = 30
+    max_counter_value = 60
     target_interpolation_frames = 60
