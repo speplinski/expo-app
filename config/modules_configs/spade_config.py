@@ -29,13 +29,26 @@ MODELS = {
         'label_nc': 56, # v10
         'semantic_nc': 57,
         'ngf': 96
+    },
+    'full_new': {
+        'weights_path': './data/checkpoints/v11_660_net_G.pth',
+
+        'content_resolution': (1920, 640),
+        'aspect_ratio': 3.0,
+
+        'norm_G': 'spectralspadesyncbatch3x3',
+        'num_upsampling_layers': 'most',
+
+        'label_nc': 84, # v11
+        'semantic_nc': 85,
+        'ngf': 96
     }
 }
 
 @dataclass
 class SpadeConfig:
     bypass_spade: bool = False
-    model_name: str = 'debug_small'
+    model_name: str = 'full_new'
 
     colormap: str = cv2.COLORMAP_VIRIDIS
 
@@ -44,7 +57,7 @@ class SpadeConfig:
 
     weights_path: str = ''
 
-    upscaler_model: str = 'weights/RealESRGAN_x2plus.pth'
+    upscaler_model: str = 'weights/net_g_18000.pth'
     upscale_scale: int = 2
 
     content_resolution: tuple[int, int] = (0, 0)
