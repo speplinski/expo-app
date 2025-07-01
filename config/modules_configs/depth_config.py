@@ -10,7 +10,7 @@ class DepthGridSegmentsCount:
 
 @dataclass
 class DistanceThresholdInM:
-    min: float = 0.7
+    min: float = 1.7
     max: float = 2.8
 
 
@@ -28,7 +28,7 @@ class OakCameraConfig:
 
 @dataclass
 class DepthConfig:
-    run_cameras_in_simulation_mode: bool = True
+    run_cameras_in_simulation_mode: bool = False
 
     mirror_mode: bool = False
 

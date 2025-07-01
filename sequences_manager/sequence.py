@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.typing as npt
+import logging
 
 from sequences_manager.sequence_layer import SequenceLayer
 from sequences_manager.sequence_overlay import SequenceOverlay
@@ -18,6 +19,7 @@ class Sequence:
         self._layers = []
         self._overlay: SequenceOverlay | None = None
         self._max_counter_value = max_counter_value
+        self.logger = logging.getLogger()
 
     def load_data(self, files_path: str, overlay_files_path: str):
         data_path_root = f'{files_path}/{self.name}'
@@ -63,6 +65,7 @@ class Sequence:
         return result
 
     def update_overlay(self, counters: npt.NDArray[np.uint8])-> npt.NDArray[np.uint8]:
+        counters = counters[:9]
         return self._overlay.update_overlay_image(counters)
 
     def reset_overlay(self):

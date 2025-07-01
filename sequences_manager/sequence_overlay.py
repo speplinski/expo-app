@@ -59,8 +59,6 @@ class SequenceOverlay:
         self._overlay_image[:, :, 3] = 0
 
     def update_overlay_image(self, counters: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
-        counters = counters[:9]
-
         if self._previous_counters is None:
             self._previous_counters = np.zeros_like(counters)
         
@@ -98,6 +96,7 @@ class SequenceOverlay:
     def _overlay_alpha_blend(self, img, x_center, y_pos):
         img_h, img_w = img.shape[0], img.shape[1]
         x_left = x_center - img_w // 2
+        y_pos = y_pos - 80
         
         height, width = self._target_size[1], self._target_size[0]
         
